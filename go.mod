@@ -179,3 +179,10 @@ tool (
 	gotest.tools/gotestsum
 	mvdan.cc/gofumpt
 )
+
+// AIX support: upstream creack/pty and denisbrodbeck/machineid have no working
+// AIX implementation. These are vendored copies (pty v1.1.19, machineid v1.0.1)
+// plus the AIX files from the IBM forks. See third_party/README.md.
+replace github.com/creack/pty => ./third_party/pty
+
+replace github.com/denisbrodbeck/machineid => ./third_party/machineid

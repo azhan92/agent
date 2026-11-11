@@ -58,7 +58,7 @@ func (p *Process) interruptProcessGroup() error {
 }
 
 func GetPgid(pid int) (int, error) {
-	return syscall.Getpgid(pid)
+	return unix.Getpgid(pid)
 }
 
 // SignalString returns the name of the given signal.
