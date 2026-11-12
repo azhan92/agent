@@ -5,6 +5,7 @@ package process
 import (
 	"os"
 	"os/exec"
+	"runtime"
 	"syscall"
 
 	"github.com/creack/pty"
@@ -49,7 +50,10 @@ func StartPTY(c *exec.Cmd, raw bool) (*os.File, error) {
 		c.SysProcAttr = &syscall.SysProcAttr{}
 	}
 	c.SysProcAttr.Setsid = true
-	c.SysProcAttr.Setctty = true
+	// On AIX, Go's fork/exec has no real TIOCSCTTY (syscall.TIOCSCTTY is a
+	// placeholder), so Setctty makes the child fail with EINVAL or EPERM. Skip
+	// it there. The child still gets a new session and the pty as its stdio.
+	c.SysProcAttr.Setctty = runtime.GOOS != "aix"
 
 	if err := c.Start(); err != nil {
 		ptmx.Close() //nolint:errcheck // Best-effort cleanup.

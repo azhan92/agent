@@ -9,8 +9,15 @@ Upstream has no working AIX support in either.
 | `pty/`       | `github.com/creack/pty` v1.1.19          | Adds `pty_aix.go`, `ioctl_aix.go`, `asm_aix_ppc64.s` (from github.ibm.com/sfertile/pty); drops the AIX stub `ioctl_unsupported.go`; excludes `aix` in `pty_unsupported.go`. |
 | `machineid/` | `github.com/denisbrodbeck/machineid` v1.0.1 | Adds `id_aix.go` (from github.ibm.com/daltenty/machineid, branch `daltenty/aix-support`), reading `os_uuid` via `lsattr`; adds a `go.mod`. |
 
-Other changes on this branch: `internal/process/signal_notwindows.go` uses
-`unix.Getpgid` because `syscall.Getpgid` does not exist on AIX.
+Other changes on this branch:
+
+- `internal/process/signal_notwindows.go` uses `unix.Getpgid` because
+  `syscall.Getpgid` does not exist on AIX.
+- `internal/process/pty.go` does not set `SysProcAttr.Setctty` on AIX. Go's
+  `fork/exec` on AIX treats `TIOCSCTTY` as a placeholder, and with `Setctty` set
+  the child failed to start with `EINVAL` or `EPERM`. Verified on AIX 7.2:
+  `go test ./internal/process -run PTY -count=20` failed without this change and
+  passed with it.
 
 When bumping `creack/pty` or `machineid` in the root `go.mod`, re-apply these
 changes to the new upstream version.
